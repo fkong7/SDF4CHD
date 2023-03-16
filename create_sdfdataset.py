@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../vtk_utils'))                       
+sys.path.append(os.path.join(os.path.dirname(__file__), 'vtk_utils'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../src'))
 from pre_process import resample_spacing
 from vtk_utils import *
