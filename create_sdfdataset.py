@@ -16,6 +16,48 @@ try:
     from mpi4py import MPI
 except Exception as e: print(e)
 
+def convert_mesh_to_sign_distance_map(mesh, name='SignedDistances', img_info=None):
+    '''
+    Convert a VTK polygon mesh to a sign distance volume:
+    Args:
+        mesh: vtkPolyData
+        name: name of the point data array to store the sign distance values
+        img_info: dict of image information, spacing, min_bound(origin), size
+    Returns:
+        img: vtkImageData of the sign distance volume
+    '''
+    if img_info is None:
+        img_info = {}
+        extra = 0.2
+        size = [64, 64, 64]
+        coords = vtk_to_numpy(mesh.GetPoints().GetData())
+        min_bound, max_bound = np.min(coords, axis=0), np.max(coords, axis=0)
+        extend = max_bound - min_bound
+        min_bound -= extend * extra/2.
+        img_info['spacing'] = extend * (1.+extra) / np.array(size)
+        img_info['min_bound'] = min_bound
+        img_info['size'] = size
+
+    img = vtk.vtkImageData()
+    img.SetDimensions(img_info['size'])
+    img.SetSpacing(img_info['spacing'])
+    img.SetOrigin(img_info['min_bound'])
+    implicitPolyDataDistance = vtk.vtkImplicitPolyDataDistance()
+    implicitPolyDataDistance.SetInput(mesh)
+    signedDistances = vtk.vtkFloatArray()
+    signedDistances.SetNumberOfComponents(1)
+    signedDistances.SetName(name)
+
+    for i in range(img_info['size'][0]):
+        for j in range(img_info['size'][1]):
+            for k in range(img_info['size'][2]):
+                physical_coord = [0., 0., 0.]
+                img.TransformContinuousIndexToPhysicalPoint([k, j, i], physical_coord)
+                signedDistance = implicitPolyDataDistance.EvaluateFunction(physical_coord)
+                signedDistances.InsertNextValue(signedDistance)
+    img.GetPointData().SetScalars(signedDistances)
+    return img
+
 def crop_to_structure(img, seg, seg_ids, relax_vox=5):
     seg_py = sitk.GetArrayFromImage(seg).transpose(2, 1, 0)
     x, y, z = seg_py.shape
