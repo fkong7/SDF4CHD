@@ -1,0 +1,32 @@
+data:
+  output_dir: /scratch/users/fwkong/CHD/output/wh_raw_tests_cleanedall/miccai_test_autodecoder
+  train_dir: /scratch/users/fwkong/CHD/imageCHDCleanedOriginal_aligned_Aug/ct_train_seg/imageCHDcleaned_all
+  test_dir: /scratch/users/fwkong/CHD/imageCHDCleanedOriginal_aligned_Aug/ct_train_seg/imageCHDcleaned_all
+  chd_info:
+    diag_fn: /scratch/users/fwkong/CHD/imageCHDCleanedOriginal_Aug/ct_train_seg/imageCHDcleaned_all/imageCHD_dataset_diagnosis_info.xlsx
+    diag_sn: SelectedCleaned
+    types: ['VSD', 'AVSD', 'ToF', 'TGA', 'CA', 'PuA'] 
+  point_sampling_factor: 20
+net:
+  out_dim: 7
+  n_conv_blocks: 5
+  z_t_dim: 64
+  z_s_dim: 128
+  type_mlp_num: 6
+  ds_mlp_num: 3
+  dx_mlp_num: 3
+  latent_dim: 512
+  encoder: False
+  encoder_in_dim: 1
+train:
+  epoch: 500
+  lr: 0.0001
+  n_smpl_pts: 32768
+  scheduler:
+    factor: 0.8
+    patience: 20
+  latent_scheduler:
+    factor: 0.8
+    patience: 2
+  latent_lr: 0.01
+  batch_size: 2
