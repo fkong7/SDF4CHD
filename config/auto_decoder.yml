@@ -18,6 +18,7 @@ net:
   latent_dim: 512
   encoder: False
   encoder_in_dim: 1
+  ins_norm: True
 train:
   epoch: 500
   lr: 0.0001

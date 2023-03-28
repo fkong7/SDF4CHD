@@ -101,7 +101,8 @@ if __name__ == '__main__':
                 type_mlp_num=cfg['net']['type_mlp_num'],\
                 ds_mlp_num=cfg['net']['ds_mlp_num'],\
                 dx_mlp_num=cfg['net']['dx_mlp_num'], \
-                latent_dim=cfg['net']['latent_dim'])
+                latent_dim=cfg['net']['latent_dim'],
+                ins_norm=cfg['net']['ins_norm'])
     else:
         net = SDF4CHD(in_dim=0, \
                 out_dim=cfg['net']['out_dim'], \
@@ -111,7 +112,8 @@ if __name__ == '__main__':
                 type_mlp_num=cfg['net']['type_mlp_num'],\
                 ds_mlp_num=cfg['net']['ds_mlp_num'],\
                 dx_mlp_num=cfg['net']['dx_mlp_num'], \
-                latent_dim=cfg['net']['latent_dim'])
+                latent_dim=cfg['net']['latent_dim'], \
+                ins_norm=cfg['net']['ins_norm'])
         # initialize Z_s
         lat_vecs = torch.nn.Embedding(len(train), cfg['net']['z_s_dim']*2*2*2, max_norm=50.).to(device)
         torch.nn.init.kaiming_normal_(lat_vecs.weight.data, a=0.02, nonlinearity='leaky_relu')
