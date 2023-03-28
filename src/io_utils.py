@@ -8,7 +8,6 @@ import vtk
 from vtk.util.numpy_support import numpy_to_vtk, numpy_to_vtkIdTypeArray, vtk_to_numpy
 import matplotlib.pyplot as plt
 import pickle
-from sdf import vtk_marching_cube 
 import torch
 import shutil
 import csv
@@ -118,7 +117,7 @@ def write_sdf_to_vtk_mesh(sdf, fn, thresh, decimate=0.):
         img.SetSpacing(np.ones(3)/np.array(sdf.shape[:-1]))
         img.SetOrigin(np.zeros(3))
         img.GetPointData().SetScalars(numpy_to_vtk(sdf[:, :, :, i].transpose(2, 1, 0).flatten()))
-        mesh = vtk_marching_cube(img, thresh)
+        mesh = vtk_utils.vtk_marching_cube_continuous(img, thresh)
         # tmp flip
         mesh_coords = np.flip(vtk_to_numpy(mesh.GetPoints().GetData()), axis=-1)
         #mesh_coords[:, 0] *= -1
