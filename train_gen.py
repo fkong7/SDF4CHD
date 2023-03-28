@@ -14,14 +14,12 @@ import functools
 from gen_network import SDF4CHD, Tester
 import pkbar
 import matplotlib.pyplot as plt
-from io_utils import plot_loss_curves, save_ckp, write_sampled_point, load_ckp
-import io_utils
+from io_utils import save_ckp, write_sampled_point, load_ckp
 import argparse
 import h5py
 import random
 import math
 from torchinfo import summary
-from network import act
 from dataset import sample_points_from_sdf
 
 device = torch.device('cuda:' + str(0) if torch.cuda.is_available() else 'cpu')

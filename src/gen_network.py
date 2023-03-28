@@ -94,7 +94,7 @@ class SHAPEDecoder(nn.Module):
         self.fc_out_dx = nn.Linear(df_dim, 3, bias=True)
         self.num_layers = num_layers
         if ins_norm:
-            self.norm = torch.nn.InstanceNorm3d(num_features=im_dim_dx)
+            self.norm = torch.nn.InstanceNorm3d(num_features=z_s_dim)
         self.ins_norm = ins_norm
 
     def deform(self, points, points_type, grid):
@@ -165,7 +165,7 @@ class CorrectionDecoder(nn.Module):
         self.fc_out_ds = nn.Linear(df_dim, 1, bias=True)
         self.num_layers = num_layers
         if ins_norm:
-            self.norm = torch.nn.InstanceNorm3d(num_features=z_dim_ds)
+            self.norm = torch.nn.InstanceNorm3d(num_features=z_s_dim)
         self.ins_norm = ins_norm
 
     def forward(self, points, type_vec, grid):
@@ -216,11 +216,12 @@ class DisentangledGridDecoder3D(nn.Module):
             type_mlp_num=6, \
             ds_mlp_num=6, \
             dx_mlp_num=6, \
-            out_dim=1):
+            out_dim=1,
+            ins_norm=False):
         super(DisentangledGridDecoder3D, self).__init__()
         self.decoder = TYPEDecoder(z_dim=z_t_dim, df_dim=df_dim, mlp_num=type_mlp_num, out_dim=out_dim, point_dim=39)
-        self.flow = SHAPEDecoder(z_s_dim, z_t_dim, df_dim, dx_mlp_num)
-        self.correction = CorrectionDecoder(z_s_dim, z_t_dim, df_dim, ds_mlp_num) 
+        self.flow = SHAPEDecoder(z_s_dim, z_t_dim, df_dim, dx_mlp_num, ins_norm=ins_norm)
+        self.correction = CorrectionDecoder(z_s_dim, z_t_dim, df_dim, ds_mlp_num, ins_norm=ins_norm) 
 
     def forward(self, z_s, z_t, points, get_tmplt_coords=False, add_correction=True, inverse=True):
         # first flow back to the topology space
@@ -258,9 +259,10 @@ class SDF4CHD(nn.Module):
             type_mlp_num=6, \
             ds_mlp_num=6, \
             dx_mlp_num=6, \
-            latent_dim=512):
+            latent_dim=512, \
+            ins_norm=False):
         super(SDF4CHD, self).__init__()
-        self.decoder = DisentangledGridDecoder3D(z_t_dim=z_t_dim, z_s_dim=z_s_dim, df_dim=latent_dim, type_mlp_num=type_mlp_num, ds_mlp_num=ds_mlp_num, dx_mlp_num=dx_mlp_num, out_dim=out_dim)
+        self.decoder = DisentangledGridDecoder3D(z_t_dim=z_t_dim, z_s_dim=z_s_dim, df_dim=latent_dim, type_mlp_num=type_mlp_num, ds_mlp_num=ds_mlp_num, dx_mlp_num=dx_mlp_num, out_dim=out_dim, ins_norm=ins_norm)
         self.type_encoder = TypeEncoder(in_dim=num_types, df_dim=latent_dim, mlp_num=type_mlp_num, out_dim=z_t_dim)
         if in_dim>0:
             self.encoder = Isensee3DUNetEncoder(in_channels=in_dim, base_n_filter=16, z_dim=z_s_dim, n_conv_blocks=5)
