@@ -11,7 +11,7 @@ import dataset
 from torch.utils.data import DataLoader
 import yaml
 import functools
-from gen_network import SDF4CHD, Tester
+from gen_network import SDF4CHD, Tester, act
 import pkbar
 import matplotlib.pyplot as plt
 from io_utils import save_ckp, write_sampled_point, load_ckp
@@ -67,6 +67,29 @@ def worker_init_fn(worker_id):
     if torch_seed >= 2**30:  # make sure torch_seed + workder_id < 2**32
         torch_seed = torch_seed % 2**30
     np.random.seed(torch_seed + worker_id)
+
+def initialize_type_network(cfg, net, params_decay, optimizer_nodecay):
+    # Only train type network (encoder and decoder) and freeze the rest
+    for p in params_decay:
+        p.requires_grad = False
+
+    # initilize to fit a heart regardless of the type first
+    sdf_py_tmplt = pickle.load(open(cfg['data']['tmplt_sdf'], 'rb'))
+    for i in range(500):
+        _, points, point_values = sample_points_from_sdf(sdf_py_tmplt, cfg['train']['n_smpl_pts'], cfg['data']['point_sampling_factor'])
+        points = points.unsqueeze(0).to(device)
+        point_values = point_values.unsqueeze(0).to(device)
+        chd_type = (torch.rand((1, len(cfg['data']['chd_info']['types'])))>0.5).float().to(device)
+        z_t = net.type_encoder(chd_type)
+        out = act(net.decoder.decoder(z_t, points))
+        recons_loss = torch.mean(((out.permute(0, 2, 1) - point_values)**2)*(point_values+1))
+        recons_loss.backward()
+        print("ITER {}: Recons loss: {}.".format(i, recons_loss.item()))
+        optimizer_nodecay.step()
+
+    for p in params_decay:
+        p.requires_grad = True
+    return net
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -132,6 +155,9 @@ if __name__ == '__main__':
         optimizer_zs = torch.optim.Adam(lat_vecs.parameters(), lr=0.01, betas=(0.5, 0.999))  
         scheduler_zs = torch.optim.lr_scheduler.StepLR(optimizer_zs, step_size=cfg['train']['latent_scheduler']['patience'], gamma=cfg['train']['latent_scheduler']['factor'])
 
+    
+    # initialize type network - helps with convergence
+    net = initialize_type_network(cfg, net, params_decay, optimizer_nodecay)
     # start training
     for epoch in range(start_epoch, cfg['train']['epoch']):
         kbar = pkbar.Kbar(target=len(dataloader_train), epoch=epoch, num_epochs=cfg['train']['epoch'], width=20, always_stateful=False)
