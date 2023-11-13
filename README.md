@@ -2,7 +2,7 @@
 
 Here is the source code of our conference paper ''Type and Shape Disentangled Generative Modeling for Congenital Heart Defects'', which is accepted to The Statistical Atlases and Computational Modeling of the Heart (STACOM) workshop. 
 
-The source code of the extended version of this paper, ''SDF4CHD: Generative Modeling of Cardiac Anatomies with Congenital Heart Defects'' will be released soon. 
+The source code of the extended version of this paper, ''[SDF4CHD: Generative Modeling of Cardiac Anatomies with Congenital Heart Defects](https://arxiv.org/abs/2311.00332)'' will be released soon at this repository. 
 
 ## Step 1: Rigid registration to align shapes
 The following script applies the rigid registration function from SimpleElastix to align the shapes before training. SimpleElastix is now available using pip <https://pypi.org/project/SimpleITK-SimpleElastix/>. 
