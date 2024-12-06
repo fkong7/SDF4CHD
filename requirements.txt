@@ -1,7 +1,0 @@
-matplotlib==3.4.3
-numpy==1.18.1
-pkbar==0.5
-PyMCubes==0.1.2
-PyYAML==6.0
-SimpleITK==2.2.0
-torch==1.11.0

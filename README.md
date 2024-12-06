@@ -25,9 +25,10 @@ Figure 8: Cardiac anatomies when interpolating the CHD type vector or shape code
 
 
 ## Getting started 
-The required packages are listed in `requirements.txt'. We used Python/3.7 to build our environment. 
+The required packages are listed in `environment.yml'. 
  ```
-pip install -r requirements.txt
+conda env create -f environment.yml
+
  ```
 
 ## Run test cases
