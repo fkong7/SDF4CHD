@@ -12,7 +12,7 @@ import torch
 import shutil
 import csv
 import SimpleITK as sitk
-
+from pre_process import centering, resample_spacing
 def save_ckp_single(model, optimizer, scheduler, epoch, checkpoint_dir):
     checkpoint = {
     'epoch': epoch + 1,
@@ -231,3 +231,19 @@ def write_scores(csv_path,scores, header=('Dice', 'ASSD')):
             writer.writerow(tuple(scores[i]))
             print(scores[i])
     writeFile.close()
+def import_nifty_img(img_fn, size=(128, 128, 128), order=0):
+    img = sitk.ReadImage(img_fn)
+    img_r = resample_spacing(img, template_size=size, order=order)[0]
+    img_ds_vtk = vtk_utils.exportSitk2VTK(img_r, img_r.GetSpacing())[0]
+    x, y, z = img_ds_vtk.GetDimensions()
+    py_img = vtk_to_numpy(img_ds_vtk.GetPointData().GetScalars()).reshape(z, y, x).transpose(2, 1, 0).astype(np.float32)
+    return py_img
+
+def write_numpy_image_to_nifty(py_img, ref_img_fn, order=0):
+    ref_img = sitk.ReadImage(ref_img_fn)
+    img = sitk.GetImageFromArray(py_img.transpose(2, 1, 0))
+    ref_img_ds = resample_spacing(ref_img, template_size=img.GetSize(), order=0)[0]
+    img.CopyInformation(ref_img_ds)
+    img = centering(img, ref_img, order=order)
+    return img
+

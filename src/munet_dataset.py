@@ -10,6 +10,7 @@ import pandas as pd
 import h5py
 import random
 from dataset import parse_data_by_chd_type, read_excel
+import io_utils
 
 # ['ASD', 'VSD', 'AVSD', 'Normal']
 class ImgSDFDataset(Dataset):
@@ -71,4 +72,45 @@ class ImgSDFDataset(Dataset):
         else:  # if only predicting (no ground truth)
             data_dict = {'image': torch.from_numpy(img_py.astype(np.float32)).unsqueeze(0), \
                     'filename': os.path.basename(self.im_fns[item]).split('.')[0]}
+        return data_dict
+
+class ImgNiftyDataset(Dataset):
+    def __init__(self, root_dir, ext='*.nii.gz'):
+        print(os.path.join(root_dir, ext))
+        if isinstance(root_dir, str):
+            self.im_fns = sorted(glob.glob(os.path.join(root_dir, ext)))
+        else:
+            self.im_fns = []
+            for r in root_dir:
+                self.im_fns += sorted(glob.glob(os.path.join(r, ext)))
+        self.root_dir = root_dir
+        self.ext = ext
+    
+    def __len__(self):
+        return len(self.im_fns)
+
+    def get_file_name(self, item):
+        return self.im_fns[item]
+
+    def __getitem__(self, item):
+        if torch.is_tensor(item):
+            item = item.tolist()
+        
+        img_fn = self.im_fns[item]
+        img_py = io_utils.import_nifty_img(img_fn, size=(128,128,128), order=1)
+    
+        # if not normalized
+        if np.max(img_py) > 100 and np.max(img_py) < 10000:
+            img_py = img_py -  np.min(img_py)
+            img_py = np.clip(img_py, 0., 2000.)/2000.
+        elif np.min(img_py) < 0.: # this is for syn data
+            img_py = img_py -  np.min(img_py)
+            img_py /= np.max(img_py)
+        elif np.max(img_py) > 10000: #this is for mr - to-do
+            upper = np.percentile(img_py, 90)
+            print("MR:", upper)
+            img_py = np.clip(img_py, 0., upper)/upper
+
+        data_dict = {'image': torch.from_numpy(img_py.astype(np.float32)).unsqueeze(0), \
+                    'img_fn': img_fn}
         return data_dict
