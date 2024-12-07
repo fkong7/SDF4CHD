@@ -1,6 +1,6 @@
 # SDF4CHD
 
-Here is the source code of our pre-print paper ''[SDF4CHD: Generative Modeling of Cardiac Anatomies with Congenital Heart Defects](https://arxiv.org/abs/2311.00332)''. 
+Here is the source code of our pre-print paper ''[SDF4CHD: Generative Modeling of Cardiac Anatomies with Congenital Heart Defects](https://www.sciencedirect.com/science/article/abs/pii/S1361841524002184)''. 
 
 ## Intro
 Congenital heart disease (CHD) encompasses a spectrum of cardiovascular structural abnormalities, often requiring customized treatment plans for individual patients. CHDs are often rare, making it challenging to acquire sufficiently large patient cohorts for training such DL models. Generative modeling of cardiac anatomies has the potential to fill this gap via the generation of virtual cohorts. We have introduced a novel deep-learning approach that learns a CHD-type and CHD-shape disentangled representation of cardiac geometry for major CHD types. Our approach implicitly represents type-specific anatomies of the heart using neural SDFs and learns an invertible deformation for representing patient-specific shapes. In contrast to prior generative modeling approaches designed for normal cardiac topology, our approach accurately captures the unique cardiac anatomical abnormalities corresponding to various CHDs and provides meaningful intermediate CHD states to represent a wide CHD spectrum. When provided with a CHD-type diagnosis, our approach can create synthetic cardiac anatomies with shape variations, all while retaining the specific abnormalities associated with that CHD type. We demonstrated the ability to augment image-segmentation pairs for rarer CHD types to significantly improve cardiac segmentation accuracy for CHD patients. We can also generate synthetic CHD meshes for computational simulations and systematically explore the effects of structural abnormalities on cardiac functions.
@@ -39,12 +39,17 @@ python test_gen.py --config config/gen_test_wh.yml --epoch 2000
 Additional tests conducted in the paper can also be performed by modifying the field `test_ops` in the config file.
 
 ## Training the network
+Before training the network, we need to process the segmentations to save them into numpy arrays that can be loaded during training. A data preprocessing script can be found in `datasets/create_sdfdataset.py`. After running this script, the preprocessed `.pkl` files will be generated in the output folder for each segmentation file. You can change the paths to the segmentation folder and output folders in this script, if desired. 
+```
+python datasets/create_sdfdataset.py
+```
+
 To train the network on CHD segmentations, you need to specify the correct paths pointing to your training data by modifying the field `data` in the config file. Other network and training settings can also be adjusted in the config file. The following command will either train a model from scratch if the model does not exist in the specified output directory, or continue to train a model if the model exists. 
 ```
 python train_gen.py --config config/gen_test_wh.yml
 ```
 ## Planned updates to the repo
 Here is a list of updates that I plan to include soon in this repository. Please open an issue if you suggest additional updates.
-* Upload pre-processed segmentation data in `.pkl` format.
+* <s/>Upload pre-processed segmentation data in `.pkl` format.</s> (Updated 12/06/2024)
 * Upload template meshes used for CFD simulation.
 * A tutorial for generating anatomies of specified CHD types. 
