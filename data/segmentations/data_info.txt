@@ -1,0 +1,2 @@
+ct_41502_image.nii.gz is the segmentation of a single ventricle patient from Stanford
+The rest of segmentations are derived from the images of the ImageCHD dataset: https://www.kaggle.com/datasets/xiaoweixumedicalai/imagechd
