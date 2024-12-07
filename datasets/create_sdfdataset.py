@@ -308,8 +308,9 @@ def partition_sdf_into_chunks(sdf, target_size):
 if __name__ == '__main__':
 
     img_dir = '/scratch/users/fwkong/CHD/output/wh_raw_tests_cleanedall/GenLargeWHSep3/Ours_final_Apr11/alter5Joint1000_latent4_lipx100_NOuseDiag_Init1017_DivMag0.01_Pad0_GradMag0_smplfac20_twophase/train_2200/shape_gen/img_large'
-    seg_dir = '/scratch/users/fwkong/CHD/output/wh_raw_tests_cleanedall/GenLargeWHSep3/Ours_final_Apr11/alter5Joint1000_latent4_lipx100_NOuseDiag_Init1017_DivMag0.01_Pad0_GradMag0_smplfac20_twophase/train_2200/shape_gen/seg'
-    out_dir = '/scratch/users/fwkong/CHD/output/wh_raw_tests_cleanedall/GenLargeWHSep3/Ours_final_Apr11/alter5Joint1000_latent4_lipx100_NOuseDiag_Init1017_DivMag0.01_Pad0_GradMag0_smplfac20_twophase/train_2200/shape_gen_large/'
+    img_dir = None
+    seg_dir = 'data/segmentations'
+    out_dir = 'data/processed_segs'
 
     r_ids=[1, 2, 3, 4, 5, 6, 7]
     ref_fn = None
@@ -344,16 +345,16 @@ if __name__ == '__main__':
         seg_fns_scatter = seg_fns
 
     for seg_fn in seg_fns_scatter:
-        img_fn = os.path.join(img_dir, os.path.basename(seg_fn))
-        print(img_fn, seg_fn)
+        if img_dir:
+            img_fn = os.path.join(img_dir, os.path.basename(seg_fn))
         name = os.path.basename(seg_fn).split('.nii.gz')[0]
-      
         mesh, mesh_ls, sdf_v, sdf_v_py = create_from_segmentation(seg_fn, (512, 512, 512), (128, 128, 128), ref_fn, r_ids)
-        img_v, img_v_py = process_img(sitk.ReadImage(img_fn), sitk.ReadImage(seg_fn), (128, 128, 128))
-        if mesh is None:
+        if not mesh:
             continue
-        write_vtk_image(sdf_v, os.path.join(out_dir, 'vtk', '{}.vti'.format(name)))
         write_vtk_polydata(mesh, os.path.join(out_dir, 'vtk', '{}.vtp'.format(name)))
-        pickle.dump(img_v_py.astype(np.float32),open(os.path.join(out_dir, 'pytorch_img', '{}.pkl'.format(name)), 'wb'))
         pickle.dump(sdf_v_py.astype(np.float32),open(os.path.join(out_dir, 'pytorch', '{}.pkl'.format(name)), 'wb'))
+        if img_dir:
+            img_v, img_v_py = process_img(sitk.ReadImage(img_fn), sitk.ReadImage(seg_fn), (128, 128, 128))
+            write_vtk_image(sdf_v, os.path.join(out_dir, 'vtk', '{}.vti'.format(name)))
+            pickle.dump(img_v_py.astype(np.float32),open(os.path.join(out_dir, 'pytorch_img', '{}.pkl'.format(name)), 'wb'))
 
