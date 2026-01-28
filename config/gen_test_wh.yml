@@ -9,6 +9,8 @@ data:
     exclude_types: ['SV']
   point_sampling_factor: 20
   tmplt_sdf: data/processed_segs/pytorch/ct_1017_image.pkl
+  template_mesh_dir: data/template_meshes
+  motion_segmentation_dir: data/motion_seg/patient1_processed
 net:
   out_dim: 7
   n_conv_blocks: 5
@@ -63,7 +65,8 @@ test_ops:
   train_dice: false
   test_dice: false
   shape_type_interp: false
-  shape_gen: true
+  shape_gen: false
   invertible: false
   vsd_variation: false
   rand_type_gen: false
+  rand_motion_gen: true

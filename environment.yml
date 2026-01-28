@@ -1,4 +1,4 @@
-name: torch
+name: sdf4chd
 channels:
   - iopath
   - fvcore
