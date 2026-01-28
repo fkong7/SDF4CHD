@@ -387,7 +387,7 @@ def get_motion(net, cfg, seg_dir, iter_num=200):
         net.train()
         for param in net.parameters():
             param.requires_grad = False
-        net.set_div_loss(True)
+        # net.set_div_loss(True)
         if z_m is None:
             z_m = torch.normal(
                 torch.zeros(
@@ -440,14 +440,14 @@ def get_motion(net, cfg, seg_dir, iter_num=200):
                 * 3
             )
             gaussian_s_loss = torch.mean(z_m**2)
-            print("FLOW MAG: ", torch.mean(mag))
-            total_loss = (
-                recons_wt * recons_noDs_loss
-                + 0.00 * gaussian_s_loss
-                + 100.0 * torch.mean(mag)
-                + torch.mean(total_mag) * mag_wt
-            )
-            # total_loss = 2.*recons_noDs_loss + 0.00 * gaussian_s_loss
+            # print("FLOW MAG: ", torch.mean(mag))
+            # total_loss = (
+            #    recons_wt * recons_noDs_loss
+            #    + 0.00 * gaussian_s_loss
+            #    + 2.0 * torch.mean(mag)
+            #    + torch.mean(total_mag) * mag_wt
+            # )
+            total_loss = recons_wt * recons_noDs_loss + torch.mean(total_mag) * mag_wt
             print(k, total_loss.item())
 
             total_loss.backward()
@@ -1651,7 +1651,7 @@ if __name__ == "__main__":
         mesh_fns = glob.glob(os.path.join(template_dir, "*.vtp"))
 
         if not os.path.exists(os.path.join(seg_dir, "motion.pkl")):
-            get_motion(net, cfg, seg_dir, iter_num=10)
+            get_motion(net, cfg, seg_dir, iter_num=100)
         for f in mesh_fns:
             print(f)
             apply_motion(net, seg_dir, cfg, type_fn=f, num_shapes=10)
